@@ -97,10 +97,9 @@ class _LoadingWidgetState extends State<LoadingWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey[900],
         body: const Center(
           child: SpinKitFadingCircle(
-            color: Colors.white,
+            color: Colors.black,
           ),
         ));
   }

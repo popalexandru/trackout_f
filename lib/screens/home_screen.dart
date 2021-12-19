@@ -50,104 +50,101 @@ class _HomeState extends State<Home> {
             children: [Icon(Icons.add), Text('Add exercice')],
           ),
         ),
-        body: StreamBuilder<HomeWorkoutObj>(
-          stream: homeService.workoutStream,
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data!.isLoading == false) {
-                WorkoutResponse workoutResponse = snapshot.data!.workoutResponse!;
-                Workout? workout = workoutResponse.workout;
-
-                return Scaffold(
-                  body: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        TableCalendar(
-                          startDay: DateTime.utc(2010, 10, 16),
-                          endDay: DateTime.utc(2030, 3, 14),
-                          calendarController: _calendarController,
-                          startingDayOfWeek: StartingDayOfWeek.monday,
-                          initialCalendarFormat: CalendarFormat.week,
-                          onDaySelected: (day, events, holidays) {
-                            homeService.eventStreamSink.add(day);
-                          },
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Container(
-                            /*decoration: const BoxDecoration(
-                                    */ /*color: Color(0xFF828282)*/ /*
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(20)),
-                                    boxShadow: <BoxShadow>[
-                                      BoxShadow(
-                                          color: Color(0xff666666),
-                                          blurRadius: 5,
-                                          spreadRadius: 0.5)
-                                    ])*/
-                            child: Column(
-                              children: [
-                                const Padding(
-                                  padding: EdgeInsets.all(8.0),
-                                  child: Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text('Exercices',
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 23,
-                                        )),
+        body: Column(
+          children: [
+            TableCalendar(
+              startDay: DateTime.utc(2010, 10, 16),
+              endDay: DateTime.utc(2030, 3, 14),
+              calendarController: _calendarController,
+              startingDayOfWeek: StartingDayOfWeek.monday,
+              initialCalendarFormat: CalendarFormat.week,
+              onDaySelected: (day, events, holidays) {
+                homeService.eventStreamSink.add(day);
+              },
+            ),
+            Flexible(
+              child: StreamBuilder<HomeWorkoutObj>(
+                stream: homeService.workoutStream,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData && snapshot.data!.isLoading == false) {
+                      WorkoutResponse workoutResponse = snapshot.data!.workoutResponse!;
+                      Workout? workout = workoutResponse.workout;
+                      return Scaffold(
+                        body: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: (workout!.exerciceList!.length > 0)
+                            ? Container(
+                                  child: Column(
+                                    children: [
+                                      const Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text('Exercices',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 23,
+                                              )),
+                                        ),
+                                      ),
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount: workout!.exerciceList!.length,
+                                        itemBuilder: (context, index) {
+                                          Exercice exercice =
+                                              workout.exerciceList![index];
+                                          return ExerciceCard(exercice);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                )
+                                    : NoExercices()
+                              ),
+                              const Padding(
+                                padding: EdgeInsets.all(16.0),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Water',
+                                      style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 23,
+                                      )),
+                                ),
+                              ),
+                              Align(
+                                alignment: Alignment.center,
+                                child: SizedBox(
+                                  width: 150,
+                                  height: 150,
+                                  child: LiquidCircularProgressIndicator(
+                                    value: workout.waterQty/2500,
+                                    valueColor: AlwaysStoppedAnimation(
+                                        Colors.lightBlueAccent),
+                                    backgroundColor: Colors.white,
+                                    borderColor: Colors.lightBlueAccent,
+                                    borderWidth: 3.0,
+                                    direction: Axis.vertical,
+                                    center: Text("${workout.waterQty} / 2500 ml"),
                                   ),
                                 ),
-                                ListView.builder(
-                                  shrinkWrap: true,
-                                  itemCount: workout!.exerciceList!.length,
-                                  itemBuilder: (context, index) {
-                                    Exercice exercice =
-                                        workout.exerciceList![index];
-                                    return ExerciceCard(exercice);
-                                  },
-                                ),
-                              ],
-                            ),
+                              )
+                            ],
                           ),
                         ),
-                        const Padding(
-                          padding: EdgeInsets.all(16.0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text('Water',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 23,
-                                )),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.center,
-                          child: SizedBox(
-                            width: 150,
-                            height: 150,
-                            child: LiquidCircularProgressIndicator(
-                              value: 0.65,
-                              valueColor: AlwaysStoppedAnimation(
-                                  Colors.lightBlueAccent),
-                              backgroundColor: Colors.white,
-                              borderColor: Colors.lightBlueAccent,
-                              borderWidth: 1.0,
-                              direction: Axis.vertical,
-                              center: Text("300 ml"),
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-            } else {
-              return LoadingWidget();
-            }
-          },
+                      );
+                  } else {
+                    return LoadingWidget();
+                  }
+                },
+              ),
+            ),
+          ],
         ));
 /*    return Scaffold(
         backgroundColor: Colors.grey[900],
@@ -164,6 +161,40 @@ class _HomeState extends State<Home> {
     );*/
   }
 }
+
+class NoExercices extends StatefulWidget {
+  const NoExercices({Key? key}) : super(key: key);
+
+  @override
+  _NoExercicesState createState() => _NoExercicesState();
+}
+
+class _NoExercicesState extends State<NoExercices> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Card(
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(28.0),
+          child: Column(
+            children: const [
+              Text(
+                  'No exercices added',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+                ),
+              ),
+              Text('Use the + button to add one')
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 Path _buildSpeechBubblePath() {
   var path = Path();
