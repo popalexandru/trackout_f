@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:trackout_f/models/home_workout_obj.dart';
 import 'package:trackout_f/models/responses/workout_response.dart';
 
 enum ApiAction { fetch }
@@ -10,24 +11,24 @@ enum ApiAction { fetch }
 class HomeService{
 
   /* pipe for data */
-  final _workoutStreamController = StreamController<WorkoutResponse>();
-  final _loadingStreamController = StreamController<bool>();
+  final _workoutStreamController = StreamController<HomeWorkoutObj>();
+  /*final _loadingStreamController = StreamController<bool>();*/
 
   /* pipe for events */
   final _eventStreamController = StreamController<DateTime>();
 
   /* sink for data in */
-  StreamSink<WorkoutResponse> get _workoutSink =>
+  StreamSink<HomeWorkoutObj> get _workoutSink =>
       _workoutStreamController.sink;
-  StreamSink<bool> get _loadingSink =>
-      _loadingStreamController.sink;
+ /* StreamSink<bool> get _loadingSink =>
+      _loadingStreamController.sink;*/
 
   /* stream for data out */
   /* listen into view */
-  Stream<WorkoutResponse> get workoutStream =>
+  Stream<HomeWorkoutObj> get workoutStream =>
       _workoutStreamController.stream;
-  Stream<bool> get loadingStream =>
-      _loadingStreamController.stream;
+/*  Stream<bool> get loadingStream =>
+      _loadingStreamController.stream;*/
 
   /* sink for receiving data from UI */
   StreamSink<DateTime> get eventStreamSink => _eventStreamController.sink;
@@ -38,18 +39,17 @@ class HomeService{
   HomeService(){
     _eventStream.listen((event) async {
         _startLoading();
+
         
         try{
           var workoutResponse = await _getWorkoutByDate(_getDateString(event));
-          _workoutSink.add(workoutResponse);
+          _workoutSink.add(HomeWorkoutObj(false, workoutResponse));
 
-          _stopLoading();
+          /*_stopLoading();*/
 
         } on Exception catch (e){
           _workoutSink.addError("Something went wrong");
         }
-        
-        _stopLoading();
 
     });
   }
@@ -73,10 +73,11 @@ class HomeService{
   }
 
   void _startLoading(){
-    _loadingSink.add(true);
+    _workoutSink.add(HomeWorkoutObj(true, null));
   }
-  
+
+  /*
   void _stopLoading(){
     _loadingSink.add(false);
-  }
+  }*/
 }
