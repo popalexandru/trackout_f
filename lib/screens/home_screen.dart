@@ -70,16 +70,17 @@ class _HomeState extends State<Home> {
                 stream: homeService.workoutStream,
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isLoading == false) {
-                      WorkoutResponse workoutResponse = snapshot.data!.workoutResponse!;
-                      Workout? workout = workoutResponse.workout;
-                      return Scaffold(
-                        body: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              Padding(
+                    WorkoutResponse workoutResponse =
+                    snapshot.data!.workoutResponse!;
+                    Workout? workout = workoutResponse.workout;
+                    return Scaffold(
+                      body: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: (workout!.exerciceList!.length > 0)
-                            ? Container(
+                                    ? Container(
                                   child: Column(
                                     children: [
                                       const Padding(
@@ -89,58 +90,90 @@ class _HomeState extends State<Home> {
                                           child: Text('Exercices',
                                               style: TextStyle(
                                                 color: Colors.black,
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight:
+                                                FontWeight.bold,
                                                 fontSize: 23,
                                               )),
                                         ),
                                       ),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        itemCount: workout.exerciceList!.length,
+                                        itemCount:
+                                        workout.exerciceList!.length,
                                         itemBuilder: (context, index) {
-                                          Exercice exercice =
-                                              workout.exerciceList![index];
-                                          return ExerciceCard(exercice);
+                                          Exercice exercice = workout
+                                              .exerciceList![index];
+                                          return Dismissible(
+                                              key: UniqueKey(),
+                                              background: Padding(
+                                                padding:
+                                                const EdgeInsets.all(
+                                                    8.0),
+                                                child: Container(
+                                                    decoration:
+                                                    const BoxDecoration(
+                                                      color: Colors.red,
+                                                      borderRadius:
+                                                      BorderRadius.all(
+                                                          Radius.circular(
+                                                              20)),
+                                                    )),
+                                              ),
+                                              onDismissed: (direction) {
+                                                homeService.deleteExercice(exercice.exerciceId);
+                                              },
+                                              child:
+                                              ExerciceCard(exercice));
                                         },
                                       ),
+                                      StreamBuilder<String>(
+                                        stream: homeService.errorStream,
+                                          builder: (context, snapshot){
+                                          if(snapshot.hasData) {
+                                            WidgetsBinding.instance!.addPostFrameCallback((_) => _showMyDialog(context));
+                                            return Text('');
+                                          }else{
+                                            return Text('');
+                                          }
+                                          }
+                                      )
                                     ],
                                   ),
                                 )
-                                    : NoExercices()
+                                    : NoExercices()),
+                            const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text('Water',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 23,
+                                    )),
                               ),
-                              const Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text('Water',
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 23,
-                                      )),
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: SizedBox(
+                                width: 150,
+                                height: 150,
+                                child: LiquidCircularProgressIndicator(
+                                  value: workout.waterQty / 2500,
+                                  valueColor: AlwaysStoppedAnimation(
+                                      Colors.lightBlueAccent),
+                                  backgroundColor: Colors.white,
+                                  borderColor: Colors.lightBlueAccent,
+                                  borderWidth: 3.0,
+                                  direction: Axis.vertical,
+                                  center: Text("${workout.waterQty} / 2500 ml"),
                                 ),
                               ),
-                              Align(
-                                alignment: Alignment.center,
-                                child: SizedBox(
-                                  width: 150,
-                                  height: 150,
-                                  child: LiquidCircularProgressIndicator(
-                                    value: workout.waterQty/2500,
-                                    valueColor: AlwaysStoppedAnimation(
-                                        Colors.lightBlueAccent),
-                                    backgroundColor: Colors.white,
-                                    borderColor: Colors.lightBlueAccent,
-                                    borderWidth: 3.0,
-                                    direction: Axis.vertical,
-                                    center: Text("${workout.waterQty} / 2500 ml"),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
+                            )
+                          ],
                         ),
-                      );
+                      ),
+                    );
                   } else {
                     return LoadingWidget();
                   }
@@ -149,19 +182,6 @@ class _HomeState extends State<Home> {
             ),
           ],
         ));
-/*    return Scaffold(
-        backgroundColor: Colors.grey[900],
-      appBar: AppBar(
-        title: Text("17 Dec"),
-        centerTitle: false,
-        backgroundColor: Colors.indigo,
-      ),
-      body: Column(
-        children: [
-          Text('Home')
-        ],
-      )
-    );*/
   }
 }
 
@@ -183,11 +203,8 @@ class _NoExercicesState extends State<NoExercices> {
           child: Column(
             children: const [
               Text(
-                  'No exercices added',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold
-                ),
+                'No exercices added',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Text('Use the + button to add one')
             ],
@@ -198,7 +215,6 @@ class _NoExercicesState extends State<NoExercices> {
   }
 }
 
-
 Path _buildSpeechBubblePath() {
   var path = Path();
   path.addOval(Rect.fromCircle(center: Offset(0, 0), radius: 80.0));
@@ -207,14 +223,45 @@ Path _buildSpeechBubblePath() {
 }
 
 void _navigateAndDisplayItemAdded(BuildContext context) async {
-  final result = await Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const ExampleScreen())
-  ) as Example;
+  final result = await Navigator.push(context,
+      MaterialPageRoute(builder: (context) => const ExampleScreen()))
+  as Example;
 
 /*  ScaffoldMessenger.of(context)
   ..removeCurrentSnackBar()
   ..showSnackBar(SnackBar(content: Text('Added ${result.description}')));*/
 
-    homeService.eventAddSink.add(result);
+  homeService.eventAddSink.add(result);
+}
+
+Future<void> _showMyDialog(BuildContext context) async {
+/*  return showDialog<void>(
+    context: context,
+    barrierDismissible: true,
+    builder: (BuildContext context) {
+      return AlertDialog(
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 100,
+                  height: 100,
+                  child: Image.network('https://cdn-icons.flaticon.com/png/512/4094/premium/4094482.png?token=exp=1640036961~hmac=c02457309bc4db65e1cd63a805894d60')),
+              Text('Error deleting item',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.red,
+                fontWeight: FontWeight.bold
+              ),),
+            ],
+          )
+      );
+    },
+  );*/
+  final snackBar = SnackBar(content: Text('Error deleting the exercice'));
+
+// Find the ScaffoldMessenger in the widget tree
+// and use it to show a SnackBar.
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
 }
