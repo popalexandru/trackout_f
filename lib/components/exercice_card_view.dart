@@ -25,11 +25,28 @@ class ExerciceCard extends StatelessWidget {
         ),/*
         margin: EdgeInsets.symmetric(5),*/
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-          child: Column(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
             children: [
-              Text(exercice.name),
-              Text(exercice.description)
+              SizedBox(
+                width: 50,
+                  height: 50,
+                  child: Image.network(exercice.image)
+              ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text(
+                        exercice.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16
+                      ),
+                    ),
+                    /*Text(exercice.description)*/
+                  ],
+                ),
+              ),
             ],
           ),
         ),

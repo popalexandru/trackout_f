@@ -31,4 +31,10 @@ class Exercice{
       reps
     );
   }
+
+/*  factory Exercice.fromExample(Example example, String workoutId){
+    return Exercice(
+      exa
+    )
+  }*/
 }

@@ -72,6 +72,10 @@ class _DataWidgetState extends State<DataWidget> {
                 itemCount: snapshot.data!.length,
                 itemBuilder: (context, index){
                   Example ex = snapshot.data![index];
+                  return GestureDetector(
+                    child: ExampleCard(ex),
+                    onTap: () => Navigator.pop(context, ex),
+                  );
 
                   return ExampleCard(ex);
                 }

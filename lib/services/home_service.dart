@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
+import 'package:trackout_f/models/example.dart';
 import 'package:trackout_f/models/home_workout_obj.dart';
 import 'package:trackout_f/models/responses/workout_response.dart';
 
@@ -12,7 +14,7 @@ class HomeService{
 
   /* pipe for data */
   final _workoutStreamController = StreamController<HomeWorkoutObj>();
-  /*final _loadingStreamController = StreamController<bool>();*/
+  final _eventOnAddController = StreamController<Example>();
 
   /* pipe for events */
   final _eventStreamController = StreamController<DateTime>();
@@ -32,19 +34,35 @@ class HomeService{
 
   /* sink for receiving data from UI */
   StreamSink<DateTime> get eventStreamSink => _eventStreamController.sink;
+  StreamSink<Example> get eventAddSink => _eventOnAddController.sink;
 
   /* stream for listening to events */
   Stream<DateTime> get _eventStream => _eventStreamController.stream;
+  Stream<Example> get _eventAddStream => _eventOnAddController.stream;
+
+  late DateTime lastDateTimeFetched;
+  late WorkoutResponse lastWorkoutFetched;
 
   HomeService(){
+    _eventAddStream.listen((event) async {
+      print('Adding ${event.name}');
+
+      var exerciceAdded = await _addExercice(event.id, lastWorkoutFetched.workout!.workoutId);
+
+      if(exerciceAdded){
+        eventStreamSink.add(lastDateTimeFetched);
+      }
+    });
+
     _eventStream.listen((event) async {
         _startLoading();
 
-        
         try{
           var workoutResponse = await _getWorkoutByDate(_getDateString(event));
           _workoutSink.add(HomeWorkoutObj(false, workoutResponse));
 
+          lastDateTimeFetched = event;
+          lastWorkoutFetched = workoutResponse;
           /*_stopLoading();*/
 
         } on Exception catch (e){
@@ -66,6 +84,23 @@ class HomeService{
 
 
     return WorkoutResponse.fromJson(json.decode(response.body));
+  }
+
+  Future<bool> _addExercice(String exampleId, String workoutId) async {
+    Uri url = Uri.parse('https://thawing-eyrie-58399.herokuapp.com/api/exercice/add');
+
+    var headers = {
+      'Content-Type': 'application/json; charset=UTF-8'
+    };
+
+    var bod = jsonEncode(<String, String>{
+      'exampleId': exampleId,
+      'workoutId': workoutId
+    });
+
+    Response response = await post(url, headers: headers, body: bod);
+
+    return response.statusCode == HttpStatus.ok;
   }
 
   String _getDateString(DateTime date){

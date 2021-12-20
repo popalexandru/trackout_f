@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:horizontal_calendar/horizontal_calendar.dart';
 import 'package:trackout_f/components/exercice_card_view.dart';
+import 'package:trackout_f/models/example.dart';
 import 'package:trackout_f/models/exercice.dart';
 import 'package:trackout_f/models/home_workout_obj.dart';
 import 'package:trackout_f/models/responses/workout_response.dart';
@@ -20,8 +21,9 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
+final homeService = HomeService();
+
 class _HomeState extends State<Home> {
-  final homeService = HomeService();
   final dateUtils = DateUtility();
 
   CalendarController _calendarController = CalendarController();
@@ -44,7 +46,8 @@ class _HomeState extends State<Home> {
         floatingActionButton: FloatingActionButton.extended(
           elevation: 6,
           onPressed: () {
-            Navigator.pushNamed(context, '/examples');
+            //Navigator.pushNamed(context, '/examples');
+            _navigateAndDisplayItemAdded(context);
           },
           label: Row(
             children: [Icon(Icons.add), Text('Add exercice')],
@@ -93,7 +96,7 @@ class _HomeState extends State<Home> {
                                       ),
                                       ListView.builder(
                                         shrinkWrap: true,
-                                        itemCount: workout!.exerciceList!.length,
+                                        itemCount: workout.exerciceList!.length,
                                         itemBuilder: (context, index) {
                                           Exercice exercice =
                                               workout.exerciceList![index];
@@ -201,4 +204,17 @@ Path _buildSpeechBubblePath() {
   path.addOval(Rect.fromCircle(center: Offset(0, 0), radius: 80.0));
 
   return path;
+}
+
+void _navigateAndDisplayItemAdded(BuildContext context) async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const ExampleScreen())
+  ) as Example;
+
+/*  ScaffoldMessenger.of(context)
+  ..removeCurrentSnackBar()
+  ..showSnackBar(SnackBar(content: Text('Added ${result.description}')));*/
+
+    homeService.eventAddSink.add(result);
 }
