@@ -50,7 +50,9 @@ class _HomeState extends State<Home> {
             _navigateAndDisplayItemAdded(context);
           },
           label: Row(
-            children: [Icon(Icons.add), Text('Add exercice')],
+            children: [
+              Icon(Icons.add) /*, Text('Add exercice')*/
+            ],
           ),
         ),
         body: Column(
@@ -71,7 +73,7 @@ class _HomeState extends State<Home> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData && snapshot.data!.isLoading == false) {
                     WorkoutResponse workoutResponse =
-                    snapshot.data!.workoutResponse!;
+                        snapshot.data!.workoutResponse!;
                     Workout? workout = workoutResponse.workout;
                     return Scaffold(
                       body: SingleChildScrollView(
@@ -81,65 +83,73 @@ class _HomeState extends State<Home> {
                                 padding: const EdgeInsets.all(8.0),
                                 child: (workout!.exerciceList!.length > 0)
                                     ? Container(
-                                  child: Column(
-                                    children: [
-                                      const Padding(
-                                        padding: EdgeInsets.all(8.0),
-                                        child: Align(
-                                          alignment: Alignment.centerLeft,
-                                          child: Text('Exercices',
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight:
-                                                FontWeight.bold,
-                                                fontSize: 23,
-                                              )),
-                                        ),
-                                      ),
-                                      ListView.builder(
-                                        shrinkWrap: true,
-                                        itemCount:
-                                        workout.exerciceList!.length,
-                                        itemBuilder: (context, index) {
-                                          Exercice exercice = workout
-                                              .exerciceList![index];
-                                          return Dismissible(
-                                              key: UniqueKey(),
-                                              background: Padding(
-                                                padding:
-                                                const EdgeInsets.all(
-                                                    8.0),
-                                                child: Container(
-                                                    decoration:
-                                                    const BoxDecoration(
-                                                      color: Colors.red,
-                                                      borderRadius:
-                                                      BorderRadius.all(
-                                                          Radius.circular(
-                                                              20)),
+                                        child: Column(
+                                          children: [
+                                            const Padding(
+                                              padding: EdgeInsets.all(8.0),
+                                              child: Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text('Exercices',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 23,
                                                     )),
                                               ),
-                                              onDismissed: (direction) {
-                                                homeService.deleteExercice(exercice.exerciceId);
+                                            ),
+                                            ListView.builder(
+                                              shrinkWrap: true,
+                                              itemCount:
+                                                  workout.exerciceList!.length,
+                                              itemBuilder: (context, index) {
+                                                Exercice exercice = workout
+                                                    .exerciceList![index];
+                                                return Dismissible(
+                                                    key: UniqueKey(),
+                                                    background: Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Container(
+                                                          decoration:
+                                                              const BoxDecoration(
+                                                        color: Colors.red,
+                                                        borderRadius:
+                                                            BorderRadius.all(
+                                                                Radius.circular(
+                                                                    20)),
+                                                      )),
+                                                    ),
+                                                    onDismissed: (direction) {
+                                                      homeService
+                                                          .deleteExercice(
+                                                              exercice
+                                                                  .exerciceId);
+                                                    },
+                                                    child:
+                                                        ExerciceCard(exercice));
                                               },
-                                              child:
-                                              ExerciceCard(exercice));
-                                        },
-                                      ),
-                                      StreamBuilder<String>(
-                                        stream: homeService.errorStream,
-                                          builder: (context, snapshot){
-                                          if(snapshot.hasData) {
-                                            WidgetsBinding.instance!.addPostFrameCallback((_) => _showMyDialog(context));
-                                            return Text('');
-                                          }else{
-                                            return Text('');
-                                          }
-                                          }
+                                            ),
+                                            TextButton.icon(
+                                              onPressed: () {},
+                                              icon: Icon(Icons.web),
+                                              label: Text(
+                                                'Start Workout',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 18
+                                                ),
+                                              ),
+                                              style: TextButton.styleFrom(
+                                                primary: Colors.white,
+                                                backgroundColor: Colors.lightBlue,
+                                                onSurface: Colors.grey,
+                                              ),
+                                            )
+                                          ],
+                                        ),
                                       )
-                                    ],
-                                  ),
-                                )
                                     : NoExercices()),
                             const Padding(
                               padding: EdgeInsets.all(16.0),
@@ -155,19 +165,61 @@ class _HomeState extends State<Home> {
                             ),
                             Align(
                               alignment: Alignment.center,
-                              child: SizedBox(
-                                width: 150,
-                                height: 150,
-                                child: LiquidCircularProgressIndicator(
-                                  value: workout.waterQty / 2500,
-                                  valueColor: AlwaysStoppedAnimation(
-                                      Colors.lightBlueAccent),
-                                  backgroundColor: Colors.white,
-                                  borderColor: Colors.lightBlueAccent,
-                                  borderWidth: 3.0,
-                                  direction: Axis.vertical,
-                                  center: Text("${workout.waterQty} / 2500 ml"),
-                                ),
+                              child: Column(
+                                children: [
+                                  SizedBox(
+                                    width: 150,
+                                    height: 150,
+                                    child: LiquidCircularProgressIndicator(
+                                      value: workout.waterQty / 2500,
+                                      valueColor: AlwaysStoppedAnimation(
+                                          Colors.lightBlueAccent),
+                                      backgroundColor: Colors.white,
+                                      borderColor: Colors.lightBlueAccent,
+                                      borderWidth: 3.0,
+                                      direction: Axis.vertical,
+                                      center:
+                                          Text("${workout.waterQty} / 2500 ml"),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Card(
+                                              child: TextButton(
+                                                  onPressed: () {
+                                                    homeService.addWater(300);
+                                                  },
+                                                  child: Text('300 ml')),
+                                            )),
+                                        Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Card(
+                                              child: TextButton(
+                                                  onPressed: () {
+                                                    homeService.addWater(600);
+                                                  },
+                                                  child: Text('600 ml')),
+                                            )),
+                                        Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Card(
+                                                child: TextButton(
+                                                    onPressed: () {
+                                                      homeService.addWater(900);
+                                                    },
+                                                    child: Text('900 ml')))),
+                                      ],
+                                    ),
+                                  )
+                                ],
                               ),
                             )
                           ],
@@ -180,6 +232,18 @@ class _HomeState extends State<Home> {
                 },
               ),
             ),
+            StreamBuilder<String>(
+                stream: homeService.errorStream.asBroadcastStream(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    WidgetsBinding.instance!
+                        .addPostFrameCallback((_) => _showMyDialog(context));
+                  }
+                  return const SizedBox(
+                    height: 1,
+                    width: 1,
+                  );
+                })
           ],
         ));
   }
@@ -224,8 +288,8 @@ Path _buildSpeechBubblePath() {
 
 void _navigateAndDisplayItemAdded(BuildContext context) async {
   final result = await Navigator.push(context,
-      MaterialPageRoute(builder: (context) => const ExampleScreen()))
-  as Example;
+          MaterialPageRoute(builder: (context) => const ExampleScreen()))
+      as Example;
 
 /*  ScaffoldMessenger.of(context)
   ..removeCurrentSnackBar()

@@ -81,6 +81,28 @@ class HomeService {
     });
   }
 
+  Future<void> addWater(int waterQty) async {
+    print('adding $waterQty water');
+
+    Uri url = Uri.parse('https://thawing-eyrie-58399.herokuapp.com/api/water/add');
+
+    var bod = jsonEncode(<String, String>{
+      'waterQty': waterQty.toString(),
+      'workoutId': lastWorkoutFetched.workout!.workoutId,
+      'date': _getDateString(lastDateTimeFetched)
+    });
+
+    var headers = {'Content-Type': 'application/json; charset=UTF-8'};
+
+    Response response = await post(url, headers: headers, body: bod);
+
+    lastWorkoutFetched.workout!.waterQty += waterQty;
+    _workoutSink.add(HomeWorkoutObj(false, lastWorkoutFetched));
+
+    print(response.body);
+    print(response.statusCode);
+  }
+
   Future<void> deleteExercice(String exerciceId) async {
     print('deleting Exercice');
 
