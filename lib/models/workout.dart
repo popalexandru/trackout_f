@@ -6,6 +6,7 @@ class Workout{
   bool isWorkoutDone;
   String date;
   int timestampDone;
+  int timestampStarted;
   int waterQty;
   List<Exercice>? exerciceList;
 
@@ -15,6 +16,7 @@ class Workout{
       this.isWorkoutDone,
       this.date,
       this.timestampDone,
+      this.timestampStarted,
       this.waterQty,
       this.exerciceList
       );
@@ -29,6 +31,7 @@ class Workout{
         json['isWorkoutDone'],
         json['date'],
         json['timestampDone'],
+        json['timestampStarted'],
         json['waterQty'],
         exercices
     );

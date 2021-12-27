@@ -17,6 +17,8 @@ class HomeService {
   final _eventOnAddController = StreamController<Example>();
   final _errorEventController = StreamController<String>();
 
+  final _tickStreamController = StreamController<bool>();
+
   /* pipe for events */
   final _eventStreamController = StreamController<DateTime>();
 
@@ -38,17 +40,21 @@ class HomeService {
 
   StreamSink<Example> get eventAddSink => _eventOnAddController.sink;
   StreamSink<String> get _errorSink => _errorEventController.sink;
+  StreamSink<bool> get _tickSink => _tickStreamController.sink;
 
   /* stream for listening to events */
   Stream<DateTime> get _eventStream => _eventStreamController.stream;
 
   Stream<Example> get _eventAddStream => _eventOnAddController.stream;
   Stream<String> get errorStream => _errorEventController.stream;
+  Stream<bool> get tickStream => _tickStreamController.stream;
 
   late DateTime lastDateTimeFetched;
   late WorkoutResponse lastWorkoutFetched;
 
   HomeService() {
+    startTimer();
+
     _eventAddStream.listen((event) async {
       print('Adding ${event.name}');
       _startLoading();
@@ -99,8 +105,51 @@ class HomeService {
     lastWorkoutFetched.workout!.waterQty += waterQty;
     _workoutSink.add(HomeWorkoutObj(false, lastWorkoutFetched));
 
-    print(response.body);
-    print(response.statusCode);
+  }
+
+  Future<void> startWorkout(String workoutId) async {
+    print('Starting workout');
+
+    if(workoutId == lastWorkoutFetched.workout!.workoutId){
+      lastWorkoutFetched.workout!.timestampStarted = DateTime.now().millisecondsSinceEpoch;
+    }
+    _workoutSink.add(HomeWorkoutObj(false, lastWorkoutFetched));
+
+    Uri url = Uri.parse('https://thawing-eyrie-58399.herokuapp.com/api/workout/start');
+
+    var bod = jsonEncode(<String, dynamic>{
+      'workoutId': lastWorkoutFetched.workout!.workoutId,
+      'timestampStarted': DateTime.now().millisecondsSinceEpoch
+    });
+
+    var headers = {'Content-Type': 'application/json; charset=UTF-8'};
+
+    Response response = await post(url, headers: headers, body: bod);
+  }
+
+  void startTimer() {
+    Timer.periodic(Duration(milliseconds: 1000), (timer) {
+      _tickSink.add(true);
+    });
+  }
+
+  Future<void> cancelWorkout(String workoutId) async {
+    print('Canceling ongoing workout');
+
+    Uri url = Uri.parse('https://thawing-eyrie-58399.herokuapp.com/api/workout/cancel');
+
+    var bod = jsonEncode(<String, String>{
+      'workoutId': lastWorkoutFetched.workout!.workoutId
+    });
+
+    var headers = {'Content-Type': 'application/json; charset=UTF-8'};
+
+    Response response = await post(url, headers: headers, body: bod);
+
+    if(workoutId == lastWorkoutFetched.workout!.workoutId){
+      lastWorkoutFetched.workout!.timestampStarted = -1;
+    }
+    _workoutSink.add(HomeWorkoutObj(false, lastWorkoutFetched));
   }
 
   Future<void> deleteExercice(String exerciceId) async {
